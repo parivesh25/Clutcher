@@ -1,0 +1,14 @@
+{
+  "items": [
+    { "id": "docker", "name": "Docker", "aliases": [] },
+    { "id": "excel", "name": "Excel", "aliases": ["microsoft excel", "ms excel"] },
+    { "id": "figma", "name": "Figma", "aliases": [] },
+    { "id": "java", "name": "Java", "aliases": [] },
+    { "id": "javascript", "name": "JavaScript", "aliases": ["js", "ecmascript"] },
+    { "id": "machine_learning", "name": "Machine learning", "aliases": ["ml"] },
+    { "id": "python", "name": "Python", "aliases": ["python3", "py"] },
+    { "id": "react", "name": "React", "aliases": ["reactjs", "react.js"] },
+    { "id": "sql", "name": "SQL", "aliases": ["postgresql", "mysql"] },
+    { "id": "typescript", "name": "TypeScript", "aliases": ["ts"] }
+  ]
+}

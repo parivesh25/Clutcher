@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virentis.local/schemas/skill-knowledge-graph-v1.json",
+  "title": "PS-61 Skill Knowledge Graph",
+  "type": "object",
+  "required": ["schema_version", "graph_id", "title", "nodes", "edges"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "graph_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "nodes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/node"}
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "relationship", "weight"],
+        "additionalProperties": false,
+        "properties": {
+          "source": {"type": "string"},
+          "target": {"type": "string"},
+          "relationship": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "node": {
+        "type": "object",
+        "required": ["id", "label", "category", "aliases", "description", "position"],
+        "additionalProperties": true,
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+          "label": {"type": "string", "minLength": 1, "maxLength": 80},
+          "category": {"type": "string", "minLength": 1, "maxLength": 40},
+          "aliases": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+          "description": {"type": "string", "maxLength": 500},
+          "position": {
+            "type": "object",
+            "required": ["x", "y"],
+            "additionalProperties": false,
+            "properties": {
+              "x": {"type": "number", "minimum": 0, "maximum": 1},
+              "y": {"type": "number", "minimum": 0, "maximum": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+

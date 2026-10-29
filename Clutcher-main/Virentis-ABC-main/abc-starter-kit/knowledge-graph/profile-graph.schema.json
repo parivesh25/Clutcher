@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://virentis.local/schemas/profile-skill-graph-v1.json",
+  "title": "PS-61 Personal Skill Knowledge Graph",
+  "type": "object",
+  "required": ["schema_version", "graph_id", "profile", "nodes", "edges", "next_skills", "summary"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "graph_id": {"type": "string"},
+    "profile": {
+      "type": "object",
+      "required": ["current_skill_ids", "resume_skill_ids", "base_skill_ids", "learned_skill_ids"],
+      "properties": {
+        "current_skill_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "resume_skill_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "base_skill_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "learned_skill_ids": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          {"$ref": "graph.schema.json#/$defs/node"},
+          {
+            "type": "object",
+            "required": ["state", "origins"],
+            "properties": {
+              "state": {"enum": ["base", "learned", "suggested"]},
+              "origins": {
+                "type": "array",
+                "items": {"enum": ["profile_tag", "resume", "learning"]},
+                "uniqueItems": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "relationship", "weight", "state"],
+        "properties": {
+          "source": {"type": "string"},
+          "target": {"type": "string"},
+          "relationship": {"type": "string"},
+          "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+          "state": {"enum": ["known", "growth", "context"]}
+        }
+      }
+    },
+    "next_skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "readiness"],
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string"},
+          "readiness": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["base_count", "learned_count", "suggested_count"],
+      "properties": {
+        "base_count": {"type": "integer", "minimum": 0},
+        "learned_count": {"type": "integer", "minimum": 0},
+        "suggested_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
+

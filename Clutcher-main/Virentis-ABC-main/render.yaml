@@ -1,0 +1,25 @@
+# Render blueprint for the Clutcher API (Flask). New > Blueprint on render.com, pick this repo.
+# Values marked sync: false are entered in the Render dashboard, never committed.
+services:
+  - type: web
+    name: clutcher-api
+    runtime: python
+    plan: free
+    rootDir: abc-starter-kit/backend
+    buildCommand: pip install -r requirements.txt
+    # One worker: the live feed cache and its background refresh live in process memory.
+    startCommand: gunicorn "app:create_app()" --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 90
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: REQUIRE_2FA
+        value: "false"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: FRONTEND_ORIGINS
+        sync: false

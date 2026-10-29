@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PS-61 Personal Knowledge Graph</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">PS-61 · Growing student profile</p>
+        <h1>Your skill universe</h1>
+        <p class="sub">Start with what you know. As you learn, the map expands into connected skills and new opportunities.</p>
+      </div>
+      <div class="actions">
+        <button id="spin" type="button" aria-pressed="true">Pause orbit</button>
+        <button id="reset" type="button">Reset profile</button>
+        <button id="export" class="primary" type="button">Export graph</button>
+      </div>
+    </header>
+    <main>
+      <section class="canvas-panel" aria-label="Personal skill knowledge graph">
+        <div class="toolbar">
+          <label>Find a skill <input id="search" type="search" placeholder="Node.js, Flask API…" /></label>
+          <span id="counts" role="status"></span>
+        </div>
+        <div class="legend" aria-label="Graph legend">
+          <span><i class="legend-node base"></i>Base skill</span>
+          <span><i class="legend-node learned"></i>Newly learned</span>
+          <span><i class="legend-node suggested"></i>Suggested next</span>
+          <span><i class="legend-edge"></i>Relationship</span>
+        </div>
+        <div class="graph-stage">
+          <svg id="graph" viewBox="0 0 1000 650" role="img" aria-label="Interactive map of current, learned and suggested skills">
+            <defs>
+              <filter id="learned-glow" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="5" result="blur" />
+                <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+              </filter>
+            </defs>
+          </svg>
+          <div id="tooltip" class="tooltip" role="status"></div>
+        </div>
+        <p class="hint">Hover to trace relationships. Drag to reorganize. Orbit pauses while you inspect or move a skill.</p>
+      </section>
+      <aside>
+        <section class="panel profile-builder">
+          <p class="eyebrow">1 · Create your base</p>
+          <h2>Current skills</h2>
+          <p class="help">Choose tags that describe what you can already use.</p>
+          <div id="skill-tags" class="skill-tags" role="group" aria-label="Current skill tags"></div>
+          <label class="resume-file">Resume text file
+            <input id="resume-file" type="file" accept=".txt,.md,.rtf,text/plain,text/markdown" />
+          </label>
+          <label>Or paste resume text
+            <textarea id="resume-text" rows="5" placeholder="Built Flask APIs with Python and PostgreSQL…"></textarea>
+          </label>
+          <p class="help">This local demo reads plain-text resumes. During integration, PDF/DOCX extraction should produce the same resume_text input.</p>
+          <button id="build-profile" class="primary" type="button">Build my graph</button>
+          <p id="resume-matches" class="resume-matches"></p>
+        </section>
+        <section class="panel skill-detail">
+          <p class="eyebrow">2 · Grow your graph</p>
+          <div id="empty-detail" class="help">Select a node to inspect it.</div>
+          <div id="selected-detail" hidden>
+            <div class="detail-heading">
+              <h2 id="detail-label"></h2>
+              <span id="detail-state" class="state-pill"></span>
+            </div>
+            <p id="detail-description"></p>
+            <dl>
+              <div><dt>Category</dt><dd id="detail-category"></dd></div>
+              <div><dt>Added from</dt><dd id="detail-origin"></dd></div>
+            </dl>
+            <button id="learn-skill" class="primary" type="button">Mark as learned</button>
+          </div>
+        </section>
+        <section class="panel progress-panel">
+          <p class="eyebrow">Progress</p>
+          <dl class="progress">
+            <div><dt>Base</dt><dd id="base-count">0</dd></div>
+            <div><dt>Learned</dt><dd id="learned-count">0</dd></div>
+            <div><dt>Next steps</dt><dd id="suggested-count">0</dd></div>
+          </dl>
+          <h3>Strongest next steps</h3>
+          <ol id="next-skills"></ol>
+        </section>
+      </aside>
+    </main>
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
+
