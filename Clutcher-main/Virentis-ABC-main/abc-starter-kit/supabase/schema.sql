@@ -1,6 +1,6 @@
 -- ABC starter kit: database setup.
 -- How to run: Supabase dashboard -> SQL Editor -> New query -> paste this whole file -> Run.
--- It is safe to run twice. (I could not test it against a live Supabase project, so run it tonight.)
+-- It is safe to run twice. This schema matches the Clutcher Supabase project.
 
 -- 1. Profiles: one row per user, holds the role ('user' or 'admin').
 create table if not exists public.profiles (
@@ -80,8 +80,12 @@ create table if not exists public.student_profiles (
   country_code text,
   study_level text check (study_level is null or study_level in ('school', 'undergraduate', 'postgraduate', 'other')),
   graduation_year integer,
+  cgpa numeric(4,2) check (cgpa between 0 and 10),
+  degree text check (degree is null or char_length(degree) between 1 and 80),
   updated_at timestamptz not null default now()
 );
+alter table public.student_profiles add column if not exists cgpa numeric(4,2) check (cgpa between 0 and 10);
+alter table public.student_profiles add column if not exists degree text check (degree is null or char_length(degree) between 1 and 80);
 
 create table if not exists public.opportunities (
   id uuid primary key default gen_random_uuid(),
@@ -92,6 +96,7 @@ create table if not exists public.opportunities (
   source_name text not null,
   source_url text not null,
   source_external_id text,
+  is_demo boolean not null default false,
   application_deadline_at timestamptz,
   application_deadline_date date,
   deadline_timezone text,
@@ -105,6 +110,7 @@ create table if not exists public.opportunities (
   created_at timestamptz not null default now(),
   unique (source_name, source_url)
 );
+alter table public.opportunities add column if not exists is_demo boolean not null default false;
 
 create table if not exists public.opportunity_skills (
   opportunity_id uuid not null references public.opportunities(id) on delete cascade,
@@ -113,6 +119,21 @@ create table if not exists public.opportunity_skills (
   primary key (opportunity_id, skill_id)
 );
 create index if not exists opportunity_skills_skill_id_idx on public.opportunity_skills (skill_id);
+
+create table if not exists public.skill_links (
+  skill_a text not null references public.skills(id) on delete cascade,
+  skill_b text not null references public.skills(id) on delete cascade,
+  primary key (skill_a, skill_b),
+  check (skill_a < skill_b)
+);
+create index if not exists skill_links_skill_b_idx on public.skill_links (skill_b);
+
+create table if not exists public.student_skill_maps (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  positions jsonb not null default '{}'::jsonb,
+  links jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
 
 create table if not exists public.ingestion_runs (
   id uuid primary key default gen_random_uuid(),
@@ -132,6 +153,8 @@ alter table public.student_profiles enable row level security;
 alter table public.opportunities enable row level security;
 alter table public.opportunity_skills enable row level security;
 alter table public.ingestion_runs enable row level security;
+alter table public.skill_links enable row level security;
+alter table public.student_skill_maps enable row level security;
 
 -- Supabase's RLS event-trigger helper must not be exposed through the Data API.
 -- The conditional block keeps this setup script portable if that helper is absent.
@@ -152,6 +175,25 @@ insert into public.skills (id, name, aliases) values
   ('sql', 'SQL', array['postgresql', 'postgres'])
 on conflict (id) do nothing;
 
+insert into public.skills (id, name, aliases) values
+  ('flask_api', 'Flask API', array['flaskapi', 'flask api']),
+  ('nodejs', 'Node.js', array['nodejs', 'node js', 'node']),
+  ('express', 'Express', array['expressjs', 'express.js']),
+  ('docker', 'Docker', array[]::text[]),
+  ('figma', 'Figma', array[]::text[]),
+  ('machine_learning', 'Machine learning', array['ml']),
+  ('java', 'Java', array[]::text[]),
+  ('excel', 'Excel', array['microsoft excel', 'ms excel'])
+on conflict (id) do nothing;
+
+insert into public.skill_links (skill_a, skill_b) values
+  ('flask', 'python'), ('flask', 'flask_api'), ('flask_api', 'python'),
+  ('javascript', 'nodejs'), ('javascript', 'react'), ('javascript', 'typescript'),
+  ('express', 'nodejs'), ('nodejs', 'typescript'), ('react', 'typescript'),
+  ('flask_api', 'sql'), ('python', 'sql'), ('machine_learning', 'python'),
+  ('docker', 'flask_api'), ('docker', 'nodejs'), ('figma', 'react')
+on conflict do nothing;
+
 -- 4b. Personal skill knowledge graph (additive; safe to run on an existing project).
 --     Stores only each user's own skill states. The graph itself stays in the backend
 --     (backend/knowledge_graph/data/skill-graph.json), so it is never copied per user.
@@ -170,7 +212,13 @@ alter table public.skill_progress enable row level security;
 -- The backend uses the service key; these policies let a signed-in user read and change only their own rows.
 drop policy if exists "skill_progress own rows" on public.skill_progress;
 create policy "skill_progress own rows" on public.skill_progress
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  for all using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+
+-- Explicit grants are required for projects where Data API auto-exposure is disabled.
+-- RLS still blocks browser access except where a policy permits it.
+grant usage on schema public to anon, authenticated, service_role;
+grant all privileges on all tables in schema public to anon, authenticated, service_role;
+grant all privileges on all sequences in schema public to anon, authenticated, service_role;
 
 -- 5. Make yourself admin (admins see everyone's records). Replace the email, then run:
 --    update public.profiles set role = 'admin' where email = 'you@example.com';
