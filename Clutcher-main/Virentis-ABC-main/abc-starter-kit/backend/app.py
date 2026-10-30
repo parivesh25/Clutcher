@@ -27,6 +27,9 @@ from domain_schema import validate_opportunity, validate_student_profile
 from matching import rank_opportunities
 from utils import RateLimiter, TTLCache
 
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV_PATH = os.path.join(BACKEND_DIR, ".env")
+
 ALLOWED_STATUS = {"open", "in_progress", "done"}
 FIELD_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]{0,29}$")
 
@@ -478,7 +481,9 @@ def interview_prep():
 
 # ---------- app factory ----------
 def create_app(test_config=None):
-    load_dotenv()
+    # Resolve the environment file from this module, not the terminal's current
+    # directory. This keeps local startup consistent for every teammate.
+    load_dotenv(ENV_PATH)
     app = Flask(__name__)
     app.config.update(
         SUPABASE_URL=os.getenv("SUPABASE_URL", "").rstrip("/"),
