@@ -2,8 +2,8 @@
 
 Public:   GET  /api/knowledge-graph                 the canonical catalogue
           GET  /api/knowledge-graph/related         nearest skills by weighted path
-Sign-in:  POST /api/knowledge-graph/profile         build this user's growing graph
-          GET  /api/knowledge-graph/progress        this user's saved skill states
+          POST /api/knowledge-graph/profile         build a stateless growing graph
+Sign-in:  GET  /api/knowledge-graph/progress        this user's saved skill states
           PUT  /api/knowledge-graph/progress        save base/learned skills and node positions
 """
 from flask import Blueprint, g, jsonify, request
@@ -55,7 +55,6 @@ def create_knowledge_graph_blueprint(skill_graph):
             return jsonify(error="Use a known skill and an integer limit."), 400
 
     @bp.post("/profile")
-    @auth.login_required
     def create_profile_graph():
         body = request.get_json(silent=True) or {}
         try:

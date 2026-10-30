@@ -39,8 +39,10 @@ def test_catalogue_and_related_are_public(client):
     assert client.get("/api/knowledge-graph/related?skill=nope").status_code == 400
 
 
-def test_profile_graph_requires_login(client):
-    assert client.post("/api/knowledge-graph/profile", json={}).status_code == 401
+def test_profile_graph_is_public_and_stateless(client):
+    response = client.post("/api/knowledge-graph/profile", json={})
+    assert response.status_code == 200
+    assert response.get_json()["nodes"] == []
 
 
 def test_profile_graph_ignores_skills_outside_catalogue(client):
