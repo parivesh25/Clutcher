@@ -43,26 +43,32 @@ export function GlassCursor() {
     let hover = false
     let frame = 0
 
-    const onMove = (e: MouseEvent) => {
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(loop)
+    }
+    const onMove = (e: PointerEvent) => {
       target.x = e.clientX
       target.y = e.clientY
       const el = e.target as HTMLElement | null
       hover = !!el?.closest('button, a, input, select, textarea, [role="button"]')
+      schedule()
     }
     const loop = () => {
-      ringPos.x += (target.x - ringPos.x) * 0.25
-      ringPos.y += (target.y - ringPos.y) * 0.25
-      auraPos.x += (target.x - auraPos.x) * 0.1
-      auraPos.y += (target.y - auraPos.y) * 0.1
+      frame = 0
+      ringPos.x += (target.x - ringPos.x) * 0.45
+      ringPos.y += (target.y - ringPos.y) * 0.45
+      auraPos.x += (target.x - auraPos.x) * 0.22
+      auraPos.y += (target.y - auraPos.y) * 0.22
       if (dot.current) dot.current.style.transform = `translate3d(${target.x - 6}px, ${target.y - 6}px, 0) scale(${hover ? 0.5 : 1})`
       if (ring.current) ring.current.style.transform = `translate3d(${ringPos.x - 18}px, ${ringPos.y - 18}px, 0) scale(${hover ? 1.5 : 1})`
       if (aura.current) aura.current.style.transform = `translate3d(${auraPos.x - 64}px, ${auraPos.y - 64}px, 0)`
-      frame = requestAnimationFrame(loop)
+      const ringDistance = Math.abs(target.x - ringPos.x) + Math.abs(target.y - ringPos.y)
+      const auraDistance = Math.abs(target.x - auraPos.x) + Math.abs(target.y - auraPos.y)
+      if (ringDistance > 0.3 || auraDistance > 0.3) schedule()
     }
-    window.addEventListener('mousemove', onMove, { passive: true })
-    frame = requestAnimationFrame(loop)
+    window.addEventListener('pointermove', onMove, { passive: true })
     return () => {
-      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('pointermove', onMove)
       cancelAnimationFrame(frame)
       document.body.classList.remove('clutcher-cursor')
     }
@@ -70,9 +76,9 @@ export function GlassCursor() {
 
   return (
     <>
-      <div ref={aura} className="fixed top-0 left-0 w-32 h-32 rounded-full pointer-events-none z-[9997] bg-violet-500/15 blur-2xl" />
-      <div ref={dot} className="fixed top-0 left-0 w-3 h-3 rounded-full pointer-events-none z-[9999] bg-violet-600 transition-[scale] duration-200" />
-      <div ref={ring} className="fixed top-0 left-0 w-9 h-9 rounded-full pointer-events-none z-[9998] border border-violet-500/60 transition-[scale] duration-200" />
+      <div ref={aura} className="fixed top-0 left-0 w-32 h-32 rounded-full pointer-events-none z-[9997] bg-violet-500/15 blur-2xl will-change-transform" />
+      <div ref={dot} className="fixed top-0 left-0 w-3 h-3 rounded-full pointer-events-none z-[9999] bg-violet-600 transition-[scale] duration-200 will-change-transform" />
+      <div ref={ring} className="fixed top-0 left-0 w-9 h-9 rounded-full pointer-events-none z-[9998] border border-violet-500/60 transition-[scale] duration-200 will-change-transform" />
     </>
   )
 }
