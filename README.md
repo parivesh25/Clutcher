@@ -7,6 +7,7 @@ Clutcher is a student-focused opportunity discovery platform for internships, jo
 - Supabase email/password authentication and user profiles
 - Normalized opportunity feed from Unstop, Devpost, and Remotive
 - Personalized recommendations with explainable skill-fit scores
+- Gemini API integration for AI-assisted summaries and learning guidance
 - Eligibility checks for education, location, graduation year, degree, and CGPA
 - Skill-gap analysis with transferable skills and practical learning steps
 - Interactive Skill Graph with base, learned, and suggested skills
@@ -31,6 +32,7 @@ React + Vite frontend
    ├── Supabase with RLS ────────── user Skill Graph progress
    └── Flask REST API
          ├── Recommendation and skill-gap engine
+         ├── Gemini API ──────── AI summaries and learning guidance
          ├── Eligibility and deadline rules
          ├── Knowledge-graph builder
          ├── Supabase PostgreSQL ── profiles, skills, opportunities
@@ -57,7 +59,7 @@ The core recommendation engine is deterministic and does not require an LLM API.
 - Missing skills are converted into preparation steps, estimated learning time, project ideas, and resources.
 - Results are labeled as ready, focused preparation, stretch, or urgent so the ranking remains explainable.
 
-Gemini/OpenRouter support is optional for selected generated summaries or learning-roadmap text. Local fallbacks keep the main matching workflow functional when generation is unavailable.
+The project uses the **Gemini API** for selected AI-generated summaries and learning-roadmap guidance. The core ranking and eligibility calculations remain deterministic, and local fallbacks keep matching functional when Gemini is unavailable or rate-limited. OpenRouter can be configured as an alternative generation provider.
 
 ## Opportunity feed
 
